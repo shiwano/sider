@@ -10,15 +10,17 @@ namespace Sider
     protected static readonly DateTime UnixEpoch = new DateTime(UnixEpochL);
 
 
-    private byte[] _buffer;
+    private byte[] _sharedBuffer;
+    private byte[] _encodingBuffer;
     private Encoding _encoding;
 
-    public byte[] SharedBuffer { get { return _buffer; } }
+    public byte[] SharedBuffer { get { return _sharedBuffer; } }
 
     public ProtocolEncoder(RedisSettings settings) :
       base(settings)
     {
-      _buffer = new byte[settings.EncodingBufferSize];
+      _sharedBuffer = new byte[settings.EncodingBufferSize];
+      _encodingBuffer = new byte[settings.EncodingBufferSize];
       _encoding = settings.EncodingOverride ?? Encoding.UTF8;
     }
 
@@ -26,10 +28,10 @@ namespace Sider
     public ArraySegment<byte> Encode(string s)
     {
       var bytesNeeded = _encoding.GetByteCount(s);
-      if (bytesNeeded <= _buffer.Length) {
-        var bytesWrote = _encoding.GetBytes(s, 0, s.Length, _buffer, 0);
+      if (bytesNeeded <= _encodingBuffer.Length) {
+        var bytesWrote = _encoding.GetBytes(s, 0, s.Length, _encodingBuffer, 0);
 
-        return new ArraySegment<byte>(_buffer, 0, bytesWrote);
+        return new ArraySegment<byte>(_encodingBuffer, 0, bytesWrote);
       }
 
       var buffer = _encoding.GetBytes(s);
