@@ -45,7 +45,9 @@ namespace Sider.Executors
       for (int i = 0; i < ReadsQueue.Count; i++)
         Reader.ReadQueued();
 
-      Reader.ReadMultiBulkHeader(); // read-out a multi-bulk header
+      if (Reader.ReadMultiBulkHeader() == -1) // read-out a multi-bulk header
+        return null;
+
       return base.Finish(); // read out all the queued reads
     }
 
